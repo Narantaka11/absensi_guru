@@ -1,0 +1,49 @@
+@import "bootstrap/dist/css/bootstrap.min.css";
+
+:root {
+    --bs-body-bg: #eff2f7;
+    --bs-body-color: #212529;
+    --bs-primary: #1d4ed8;
+    --bs-secondary: #f59e0b;
+    --bs-success: #16a34a;
+    --bs-info: #0ea5e9;
+    --bs-warning: #f97316;
+    --bs-danger: #dc2626;
+}
+
+body {
+    min-height: 100vh;
+    background: #edf2f7;
+}
+
+.sidebar {
+    width: 260px;
+    min-height: calc(100vh - 56px);
+}
+
+.sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.sidebar .nav-link.active,
+.sidebar .nav-link:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.main-header {
+    margin-bottom: 1.5rem;
+}
+
+.card {
+    border-radius: 1rem;
+}
+
+.table th,
+.table td {
+    vertical-align: middle;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    color: rgba(255, 255, 255, 0.7);
+}

@@ -79,7 +79,7 @@ class Salary extends Model
             self::STATUS_APPROVED => 'Disetujui',
             self::STATUS_PAID     => 'Sudah Dibayar',
             default               => 'Tidak Diketahui',
-        ];
+        };
     }
 
     /** Total potongan */

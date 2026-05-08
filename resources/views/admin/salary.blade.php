@@ -1,156 +1,110 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                {{ __('Data Penggajian Guru') }}
-            </h2>
-            <a href="{{ route('admin.dashboard') }}" class="text-blue-600 hover:text-blue-900">
-                ← Kembali ke Dashboard
-            </a>
+@extends('layouts.admin')
+
+@section('header')
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
+        <div>
+            <h1 class="h3 mb-1">Data Penggajian Guru</h1>
+            <p class="text-muted mb-0">Kelola dan pantau status pembayaran guru.</p>
         </div>
-    </x-slot>
+        <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-primary btn-sm">← Kembali ke Dashboard</a>
+    </div>
+@endsection
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Filter Section -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <form action="{{ route('admin.salary') }}" method="GET" class="flex gap-4 flex-wrap items-end">
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Bulan</label>
-                            <select name="month" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
-                                @foreach($months as $num => $name)
-                                    <option value="{{ $num }}" {{ $num == $currentMonth ? 'selected' : '' }}>
-                                        {{ $name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Tahun</label>
-                            <select name="year" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
-                                @for($y = now()->year - 2; $y <= now()->year + 2; $y++)
-                                    <option value="{{ $y }}" {{ $y == $currentYear ? 'selected' : '' }}>
-                                        {{ $y }}
-                                    </option>
-                                @endfor
-                            </select>
-                        </div>
-                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                            Filter
-                        </button>
-                    </form>
+@section('content')
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form action="{{ route('admin.salary') }}" method="GET" class="row row-cols-lg-auto g-2 align-items-end">
+                <div class="col-12">
+                    <label class="form-label small mb-1">Bulan</label>
+                    <select name="month" class="form-select form-select-sm">
+                        @foreach($months as $num => $name)
+                            <option value="{{ $num }}" {{ $num == $currentMonth ? 'selected' : '' }}>{{ $name }}</option>
+                        @endforeach
+                    </select>
                 </div>
-            </div>
-
-            <!-- Salary Table -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Daftar Gaji Guru</h3>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead class="bg-gray-100 dark:bg-gray-700">
-                                <tr>
-                                    <th class="px-4 py-3 text-left font-semibold">Nama Guru</th>
-                                    <th class="px-4 py-3 text-right font-semibold">Gaji Pokok</th>
-                                    <th class="px-4 py-3 text-center font-semibold">Hari Hadir</th>
-                                    <th class="px-4 py-3 text-center font-semibold">Hari Absen</th>
-                                    <th class="px-4 py-3 text-right font-semibold">Potongan Absensi</th>
-                                    <th class="px-4 py-3 text-right font-semibold">Potongan Terlambat</th>
-                                    <th class="px-4 py-3 text-right font-semibold">Gaji Total</th>
-                                    <th class="px-4 py-3 text-center font-semibold">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                @forelse($salaries as $salary)
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                        <td class="px-4 py-3">{{ $salary->user->name }}</td>
-                                        <td class="px-4 py-3 text-right">
-                                            Rp {{ number_format($salary->base_salary, 0, ',', '.') }}
-                                        </td>
-                                        <td class="px-4 py-3 text-center">
-                                            <span class="inline-block bg-green-100 text-green-800 px-3 py-1 rounded">
-                                                {{ $salary->total_present_days }}
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-3 text-center">
-                                            <span class="inline-block bg-red-100 text-red-800 px-3 py-1 rounded">
-                                                {{ $salary->total_absent_days }}
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-3 text-right">
-                                            <span class="text-red-600 font-semibold">
-                                                -Rp {{ number_format($salary->deduction_for_absence, 0, ',', '.') }}
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-3 text-right">
-                                            <span class="text-red-600 font-semibold">
-                                                -Rp {{ number_format($salary->deduction_for_late, 0, ',', '.') }}
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-3 text-right">
-                                            <span class="font-bold text-lg text-green-600">
-                                                Rp {{ number_format($salary->total_salary, 0, ',', '.') }}
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-3 text-center">
-                                            <span class="inline-block px-3 py-1 rounded text-white text-xs font-semibold
-                                                @if($salary->status == 'draft') bg-gray-600
-                                                @elseif($salary->status == 'approved') bg-blue-600
-                                                @else bg-green-600
-                                                @endif
-                                            ">
-                                                {{ ucfirst($salary->status) }}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="8" class="px-4 py-3 text-center text-gray-500">
-                                            Tidak ada data penggajian
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Pagination -->
-                    <div class="mt-4">
-                        {{ $salaries->links() }}
-                    </div>
+                <div class="col-12">
+                    <label class="form-label small mb-1">Tahun</label>
+                    <select name="year" class="form-select form-select-sm">
+                        @for($y = now()->year - 2; $y <= now()->year + 2; $y++)
+                            <option value="{{ $y }}" {{ $y == $currentYear ? 'selected' : '' }}>{{ $y }}</option>
+                        @endfor
+                    </select>
                 </div>
-            </div>
-
-            <!-- Summary Stats -->
-            @if($salaries->count() > 0)
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mt-6">
-                    <div class="p-6">
-                        <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Ringkasan Penggajian</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <p class="text-gray-600 dark:text-gray-400 text-sm">Total Gaji Pokok</p>
-                                <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                                    Rp {{ number_format($salaries->sum('base_salary'), 0, ',', '.') }}
-                                </p>
-                            </div>
-                            <div>
-                                <p class="text-gray-600 dark:text-gray-400 text-sm">Total Potongan</p>
-                                <p class="text-2xl font-bold text-red-600">
-                                    -Rp {{ number_format($salaries->sum('deduction_for_absence') + $salaries->sum('deduction_for_late'), 0, ',', '.') }}
-                                </p>
-                            </div>
-                            <div>
-                                <p class="text-gray-600 dark:text-gray-400 text-sm">Total Gaji Bersih</p>
-                                <p class="text-2xl font-bold text-green-600">
-                                    Rp {{ number_format($salaries->sum('total_salary'), 0, ',', '.') }}
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary btn-sm">Filter</button>
                 </div>
-            @endif
+            </form>
         </div>
     </div>
-</x-app-layout>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nama Guru</th>
+                            <th class="text-end">Gaji Pokok</th>
+                            <th class="text-center">Hari Hadir</th>
+                            <th class="text-center">Hari Absen</th>
+                            <th class="text-end">Potongan Absensi</th>
+                            <th class="text-end">Potongan Terlambat</th>
+                            <th class="text-end">Gaji Total</th>
+                            <th class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($salaries as $salary)
+                            <tr>
+                                <td>{{ $salary->user->name }}</td>
+                                <td class="text-end">Rp {{ number_format($salary->base_salary, 0, ',', '.') }}</td>
+                                <td class="text-center"><span class="badge bg-success">{{ $salary->total_present_days }}</span></td>
+                                <td class="text-center"><span class="badge bg-danger">{{ $salary->total_absent_days }}</span></td>
+                                <td class="text-end text-danger">-Rp {{ number_format($salary->deduction_for_absence, 0, ',', '.') }}</td>
+                                <td class="text-end text-danger">-Rp {{ number_format($salary->deduction_for_late, 0, ',', '.') }}</td>
+                                <td class="text-end text-success fw-bold">Rp {{ number_format($salary->total_salary, 0, ',', '.') }}</td>
+                                <td class="text-center">
+                                    <span class="badge @if($salary->status == 'draft') bg-secondary @elseif($salary->status == 'approved') bg-info @else bg-success @endif text-white">{{ ucfirst($salary->status) }}</span>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="8" class="text-center text-muted">Tidak ada data penggajian</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-3">
+                {{ $salaries->links() }}
+            </div>
+        </div>
+    </div>
+
+    @if($salaries->count() > 0)
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <div class="border rounded-3 p-3 bg-light">
+                            <p class="text-muted small mb-1">Total Gaji Pokok</p>
+                            <p class="h5 mb-0">Rp {{ number_format($salaries->sum('base_salary'), 0, ',', '.') }}</p>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="border rounded-3 p-3 bg-light">
+                            <p class="text-muted small mb-1">Total Potongan</p>
+                            <p class="h5 mb-0 text-danger">-Rp {{ number_format($salaries->sum('deduction_for_absence') + $salaries->sum('deduction_for_late'), 0, ',', '.') }}</p>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="border rounded-3 p-3 bg-light">
+                            <p class="text-muted small mb-1">Total Gaji Bersih</p>
+                            <p class="h5 mb-0 text-success">Rp {{ number_format($salaries->sum('total_salary'), 0, ',', '.') }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+@endsection

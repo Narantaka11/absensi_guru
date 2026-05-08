@@ -1,0 +1,402 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Absensi Guru API",
+    "version": "1.0.0",
+    "description": "API untuk sistem absensi guru dengan GPS geofencing dan payroll",
+    "contact": {
+      "name": "Support",
+      "email": "support@absensi-guru.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000",
+      "description": "Development Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "token"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Authentication endpoints"
+    },
+    {
+      "name": "Presence",
+      "description": "Teacher attendance endpoints"
+    },
+    {
+      "name": "Payroll",
+      "description": "Teacher payroll endpoints"
+    },
+    {
+      "name": "Locations",
+      "description": "School location endpoints"
+    },
+    {
+      "name": "Admin - Presence",
+      "description": "Admin presence endpoints"
+    },
+    {
+      "name": "Admin - Recap",
+      "description": "Admin recap endpoints"
+    },
+    {
+      "name": "Admin - Payroll",
+      "description": "Admin payroll endpoints"
+    }
+  ],
+  "paths": {
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {"type": "string", "format": "email"},
+                  "password": {"type": "string", "format": "password"},
+                  "device_name": {"type": "string"}
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login berhasil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {"type": "boolean"},
+                    "message": {"type": "string"},
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "token": {"type": "string"},
+                        "user": {"type": "object"}
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {"description": "Validation error"}
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Logout user",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "Logout berhasil"},
+          "401": {"description": "Unauthorized"}
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Get current user profile",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "Profil user berhasil diambil"},
+          "401": {"description": "Unauthorized"}
+        }
+      }
+    },
+    "/api/v1/locations": {
+      "get": {
+        "tags": ["Locations"],
+        "summary": "List all school locations",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "List lokasi berhasil"}
+        }
+      }
+    },
+    "/api/v1/locations/nearest": {
+      "get": {
+        "tags": ["Locations"],
+        "summary": "Find nearest location",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "latitude", "in": "query", "required": true, "schema": {"type": "number"}},
+          {"name": "longitude", "in": "query", "required": true, "schema": {"type": "number"}}
+        ],
+        "responses": {
+          "200": {"description": "Lokasi terdekat ditemukan"},
+          "404": {"description": "Lokasi tidak ditemukan"}
+        }
+      }
+    },
+    "/api/v1/presence/today": {
+      "get": {
+        "tags": ["Presence"],
+        "summary": "Get today attendance status",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "Status absensi hari ini"}
+        }
+      }
+    },
+    "/api/v1/presence/history": {
+      "get": {
+        "tags": ["Presence"],
+        "summary": "Get attendance history",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "month", "in": "query", "schema": {"type": "integer"}},
+          {"name": "year", "in": "query", "schema": {"type": "integer"}},
+          {"name": "per_page", "in": "query", "schema": {"type": "integer"}}
+        ],
+        "responses": {
+          "200": {"description": "Histori absensi berhasil diambil"}
+        }
+      }
+    },
+    "/api/v1/presence/summary": {
+      "get": {
+        "tags": ["Presence"],
+        "summary": "Get monthly attendance summary",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "month", "in": "query", "schema": {"type": "integer"}},
+          {"name": "year", "in": "query", "schema": {"type": "integer"}}
+        ],
+        "responses": {
+          "200": {"description": "Ringkasan absensi"}
+        }
+      }
+    },
+    "/api/v1/presence/check-in": {
+      "post": {
+        "tags": ["Presence"],
+        "summary": "Check-in with GPS and photo",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "latitude": {"type": "number"},
+                  "longitude": {"type": "number"},
+                  "photo": {"type": "string", "format": "binary"},
+                  "location_id": {"type": "integer"},
+                  "device_info": {"type": "string"},
+                  "notes": {"type": "string"}
+                },
+                "required": ["latitude", "longitude", "photo"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Check-in berhasil"},
+          "422": {"description": "Validation error"}
+        }
+      }
+    },
+    "/api/v1/presence/check-out": {
+      "post": {
+        "tags": ["Presence"],
+        "summary": "Check-out with GPS and photo",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "latitude": {"type": "number"},
+                  "longitude": {"type": "number"},
+                  "photo": {"type": "string", "format": "binary"},
+                  "device_info": {"type": "string"},
+                  "notes": {"type": "string"}
+                },
+                "required": ["latitude", "longitude", "photo"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Check-out berhasil"},
+          "422": {"description": "Validation error"}
+        }
+      }
+    },
+    "/api/v1/payroll/me": {
+      "get": {
+        "tags": ["Payroll"],
+        "summary": "Get my payroll slip",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "Slip gaji berhasil diambil"}
+        }
+      }
+    },
+    "/api/v1/payroll/history": {
+      "get": {
+        "tags": ["Payroll"],
+        "summary": "Get my payroll history",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "Histori gaji berhasil diambil"}
+        }
+      }
+    },
+    "/api/v1/admin/presences": {
+      "get": {
+        "tags": ["Admin - Presence"],
+        "summary": "List all presences",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "Daftar absensi"},
+          "403": {"description": "Forbidden"}
+        }
+      }
+    },
+    "/api/v1/admin/teachers": {
+      "get": {
+        "tags": ["Admin - Presence"],
+        "summary": "List all teachers",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "Daftar guru"},
+          "403": {"description": "Forbidden"}
+        }
+      }
+    },
+    "/api/v1/admin/recap/daily": {
+      "get": {
+        "tags": ["Admin - Recap"],
+        "summary": "Get daily recap",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "date", "in": "query", "schema": {"type": "string", "format": "date"}}
+        ],
+        "responses": {
+          "200": {"description": "Rekap harian"},
+          "403": {"description": "Forbidden"}
+        }
+      }
+    },
+    "/api/v1/admin/recap/weekly": {
+      "get": {
+        "tags": ["Admin - Recap"],
+        "summary": "Get weekly recap",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "Rekap mingguan"},
+          "403": {"description": "Forbidden"}
+        }
+      }
+    },
+    "/api/v1/admin/recap/monthly": {
+      "get": {
+        "tags": ["Admin - Recap"],
+        "summary": "Get monthly recap",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "Rekap bulanan"},
+          "403": {"description": "Forbidden"}
+        }
+      }
+    },
+    "/api/v1/admin/payroll": {
+      "get": {
+        "tags": ["Admin - Payroll"],
+        "summary": "List payroll slips",
+        "security": [{"bearerAuth": []}],
+        "responses": {
+          "200": {"description": "Daftar slip gaji"},
+          "403": {"description": "Forbidden"}
+        }
+      }
+    },
+    "/api/v1/admin/payroll/generate": {
+      "post": {
+        "tags": ["Admin - Payroll"],
+        "summary": "Generate payroll",
+        "security": [{"bearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "month": {"type": "integer"},
+                  "year": {"type": "integer"},
+                  "teacher_ids": {"type": "array", "items": {"type": "integer"}}
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {"description": "Payroll berhasil di-generate"},
+          "403": {"description": "Forbidden"}
+        }
+      }
+    },
+    "/api/v1/admin/payroll/{salary}/approve": {
+      "post": {
+        "tags": ["Admin - Payroll"],
+        "summary": "Approve payroll",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "salary", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {
+          "200": {"description": "Slip gaji disetujui"},
+          "403": {"description": "Forbidden"}
+        }
+      }
+    },
+    "/api/v1/admin/payroll/{salary}/paid": {
+      "post": {
+        "tags": ["Admin - Payroll"],
+        "summary": "Mark payroll as paid",
+        "security": [{"bearerAuth": []}],
+        "parameters": [
+          {"name": "salary", "in": "path", "required": true, "schema": {"type": "integer"}}
+        ],
+        "responses": {
+          "200": {"description": "Slip gaji ditandai sudah dibayar"},
+          "403": {"description": "Forbidden"}
+        }
+      }
+    }
+  }
+}

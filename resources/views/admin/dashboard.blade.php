@@ -1,155 +1,132 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Admin Dashboard - Rekap Absensi Guru') }}
-        </h2>
-    </x-slot>
+@extends('layouts.admin')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <!-- Filter Section -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6 text-gray-900 dark:text-gray-100">
-                    <form action="{{ route('admin.dashboard') }}" method="GET" class="flex gap-4 flex-wrap items-end">
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Bulan</label>
-                            <select name="month" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
-                                @foreach($months as $num => $name)
-                                    <option value="{{ $num }}" {{ $num == $currentMonth ? 'selected' : '' }}>
-                                        {{ $name }}
-                                    </option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium mb-1">Tahun</label>
-                            <select name="year" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700">
-                                @for($y = now()->year - 2; $y <= now()->year + 2; $y++)
-                                    <option value="{{ $y }}" {{ $y == $currentYear ? 'selected' : '' }}>
-                                        {{ $y }}
-                                    </option>
-                                @endfor
-                            </select>
-                        </div>
-                        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                            Filter
-                        </button>
-                    </form>
+@section('header')
+    <div>
+        <h1 class="h3 mb-1">Admin Dashboard - Rekap Absensi Guru</h1>
+        <p class="text-muted mb-0">Pantau kehadiran dan penggajian guru dengan cepat.</p>
+    </div>
+@endsection
+
+@section('content')
+    <div class="row g-4">
+        <div class="col-12 col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-uppercase text-secondary mb-3">Total Presensi</h6>
+                    <div class="display-6 fw-bold">{{ $statistics['total'] }}</div>
                 </div>
             </div>
-
-            <!-- Statistics Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <div class="text-gray-600 dark:text-gray-400 text-sm font-medium">Total Presensi</div>
-                        <div class="text-3xl font-bold text-gray-900 dark:text-white mt-2">{{ $statistics['total'] }}</div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <div class="text-green-600 dark:text-green-400 text-sm font-medium">Hadir</div>
-                        <div class="text-3xl font-bold text-green-600 dark:text-green-400 mt-2">{{ $statistics['present'] }}</div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <div class="text-yellow-600 dark:text-yellow-400 text-sm font-medium">Terlambat</div>
-                        <div class="text-3xl font-bold text-yellow-600 dark:text-yellow-400 mt-2">{{ $statistics['late'] }}</div>
-                    </div>
-                </div>
-
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <div class="text-red-600 dark:text-red-400 text-sm font-medium">Tidak Hadir</div>
-                        <div class="text-3xl font-bold text-red-600 dark:text-red-400 mt-2">{{ $statistics['absent'] }}</div>
-                    </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-uppercase text-secondary mb-3">Hadir</h6>
+                    <div class="display-6 text-success fw-bold">{{ $statistics['present'] }}</div>
                 </div>
             </div>
-
-            <!-- Average Attendance Card -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg mb-6">
-                <div class="p-6">
-                    <div class="text-gray-600 dark:text-gray-400 text-sm font-medium">Rata-rata Kehadiran</div>
-                    <div class="text-4xl font-bold text-blue-600 dark:text-blue-400 mt-2">
-                        {{ $statistics['average_attendance'] }}%
-                    </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-uppercase text-secondary mb-3">Terlambat</h6>
+                    <div class="display-6 text-warning fw-bold">{{ $statistics['late'] }}</div>
                 </div>
             </div>
-
-            <!-- Teachers Attendance Table -->
-            <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Rekap Absensi Guru</h3>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm">
-                            <thead class="bg-gray-100 dark:bg-gray-700">
-                                <tr>
-                                    <th class="px-4 py-3 text-left font-semibold">Nama Guru</th>
-                                    <th class="px-4 py-3 text-center font-semibold">Hadir</th>
-                                    <th class="px-4 py-3 text-center font-semibold">Terlambat</th>
-                                    <th class="px-4 py-3 text-center font-semibold">Tidak Hadir</th>
-                                    <th class="px-4 py-3 text-center font-semibold">Sakit</th>
-                                    <th class="px-4 py-3 text-center font-semibold">Izin</th>
-                                    <th class="px-4 py-3 text-center font-semibold">Total</th>
-                                    <th class="px-4 py-3 text-center font-semibold">Persentase</th>
-                                    <th class="px-4 py-3 text-center font-semibold">Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
-                                @forelse($attendanceSummary as $record)
-                                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
-                                        <td class="px-4 py-3">{{ $record['teacher']->name }}</td>
-                                        <td class="px-4 py-3 text-center">
-                                            <span class="inline-block bg-green-100 text-green-800 px-3 py-1 rounded">
-                                                {{ $record['present'] }}
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-3 text-center">
-                                            <span class="inline-block bg-yellow-100 text-yellow-800 px-3 py-1 rounded">
-                                                {{ $record['late'] }}
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-3 text-center">
-                                            <span class="inline-block bg-red-100 text-red-800 px-3 py-1 rounded">
-                                                {{ $record['absent'] }}
-                                            </span>
-                                        </td>
-                                        <td class="px-4 py-3 text-center">{{ $record['sick'] }}</td>
-                                        <td class="px-4 py-3 text-center">{{ $record['permission'] }}</td>
-                                        <td class="px-4 py-3 text-center font-semibold">{{ $record['total'] }}</td>
-                                        <td class="px-4 py-3 text-center">
-                                            <span class="font-semibold">{{ $record['percentage'] }}%</span>
-                                        </td>
-                                        <td class="px-4 py-3 text-center">
-                                            <a href="{{ route('teacher.detail', ['user' => $record['teacher']->id, 'month' => $currentMonth, 'year' => $currentYear]) }}"
-                                               class="text-blue-600 hover:text-blue-900 dark:hover:text-blue-400">
-                                                Detail
-                                            </a>
-                                        </td>
-                                    </tr>
-                                @empty
-                                    <tr>
-                                        <td colspan="9" class="px-4 py-3 text-center text-gray-500">
-                                            Tidak ada data guru
-                                        </td>
-                                    </tr>
-                                @endforelse
-                            </tbody>
-                        </table>
-                    </div>
+        </div>
+        <div class="col-12 col-md-3">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="text-uppercase text-secondary mb-3">Tidak Hadir</h6>
+                    <div class="display-6 text-danger fw-bold">{{ $statistics['absent'] }}</div>
                 </div>
-            </div>
-
-            <!-- Links -->
-            <div class="mt-6 flex gap-4">
-                <a href="{{ route('admin.salary') }}" class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                    Lihat Data Penggajian
-                </a>
             </div>
         </div>
     </div>
-</x-app-layout>
+
+    <div class="card shadow-sm mt-4">
+        <div class="card-body">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-3">
+                <div>
+                    <h5 class="mb-1">Rata-rata Kehadiran</h5>
+                    <p class="text-muted mb-0">Persentase kehadiran guru bulan ini.</p>
+                </div>
+                <span class="badge bg-primary fs-5">{{ $statistics['average_attendance'] }}%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mt-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5 class="card-title mb-1">Rekap Absensi Guru</h5>
+                    <p class="text-muted mb-0">Filter bulan dan tahun untuk melihat data detail.</p>
+                </div>
+                <form action="{{ route('admin.dashboard') }}" method="GET" class="row row-cols-lg-auto g-2 align-items-center mb-0">
+                    <div class="col-12">
+                        <label class="form-label small mb-1">Bulan</label>
+                        <select name="month" class="form-select form-select-sm">
+                            @foreach($months as $num => $name)
+                                <option value="{{ $num }}" {{ $num == $currentMonth ? 'selected' : '' }}>{{ $name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small mb-1">Tahun</label>
+                        <select name="year" class="form-select form-select-sm">
+                            @for($y = now()->year - 2; $y <= now()->year + 2; $y++)
+                                <option value="{{ $y }}" {{ $y == $currentYear ? 'selected' : '' }}>{{ $y }}</option>
+                            @endfor
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary btn-sm">Filter</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Nama Guru</th>
+                            <th class="text-center">Hadir</th>
+                            <th class="text-center">Terlambat</th>
+                            <th class="text-center">Tidak Hadir</th>
+                            <th class="text-center">Sakit</th>
+                            <th class="text-center">Izin</th>
+                            <th class="text-center">Total</th>
+                            <th class="text-center">Persentase</th>
+                            <th class="text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($attendanceSummary as $record)
+                            <tr>
+                                <td>{{ $record['teacher']->name }}</td>
+                                <td class="text-center"><span class="badge bg-success">{{ $record['present'] }}</span></td>
+                                <td class="text-center"><span class="badge bg-warning text-dark">{{ $record['late'] }}</span></td>
+                                <td class="text-center"><span class="badge bg-danger">{{ $record['absent'] }}</span></td>
+                                <td class="text-center">{{ $record['sick'] }}</td>
+                                <td class="text-center">{{ $record['permission'] }}</td>
+                                <td class="text-center fw-semibold">{{ $record['total'] }}</td>
+                                <td class="text-center"><span class="fw-semibold">{{ $record['percentage'] }}%</span></td>
+                                <td class="text-center">
+                                    <a href="{{ route('teacher.detail', ['user' => $record['teacher']->id, 'month' => $currentMonth, 'year' => $currentYear]) }}" class="btn btn-outline-primary btn-sm">Detail</a>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="9" class="text-center text-muted">Tidak ada data guru</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="{{ route('admin.salary') }}" class="btn btn-success">Lihat Data Penggajian</a>
+    </div>
+@endsection
