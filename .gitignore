@@ -29,10 +29,6 @@ Thumbs.db
 /node_modules
 /vendor
 
-# Vite / Build
-/public/build
-/public/hot
-
 # Storage
 /public/storage
 /storage/*.key
